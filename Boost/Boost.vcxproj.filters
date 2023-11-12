@@ -18,15 +18,15 @@
     <ClCompile Include="boost_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Viewer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="File.cu">
+    <CudaCompile Include="main.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
     <CudaCompile Include="mandelbrot.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Viewer.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
@@ -41,6 +41,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CuComplex_alt.cuh">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewer.cuh">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

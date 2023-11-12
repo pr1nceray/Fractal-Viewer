@@ -55,9 +55,9 @@ __global__ void Determine_ends(uint8_t* dest, T scale, T center_x, T center_y, i
     cur_x += center_x;
     cur_y += center_y;
 
-    uint8_t mandel_value = calculateJulia<T>(cur_x, cur_y, -1.3, max_iters);
+    //uint8_t mandel_value = calculateJulia<T>(cur_x, cur_y, -1.3, max_iters);
 
-    //uint8_t mandel_value = calculateMandel<T>(cur_x, cur_y, max_iters);
+    uint8_t mandel_value = calculateMandel<T>(cur_x, cur_y, max_iters);
     dest[(true_y * 1024 * 4) + (true_x * 4) + 0] = mandel_value;
     dest[(true_y * 1024 * 4) + (true_x * 4) + 1] = mandel_value;
     dest[(true_y * 1024 * 4) + (true_x * 4) + 2] = mandel_value;

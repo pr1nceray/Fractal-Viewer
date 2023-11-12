@@ -136,14 +136,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="boost_test.cpp" />
-    <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="File.cu" />
+    <CudaCompile Include="main.cu" />
+    <CudaCompile Include="Viewer.cu" />
     <CudaCompile Include="mandelbrot.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CuComplex_alt.cuh" />
+    <ClInclude Include="Viewer.cuh" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="Stb_image.h" />
     <ClInclude Include="mandelbrot.cuh" />

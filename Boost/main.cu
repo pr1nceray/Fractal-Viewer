@@ -6,9 +6,8 @@
 #include <SFML/Graphics.hpp>
 
 #include <stdio.h>
-#include <iostream>
 
-#include "mandelbrot.cuh"
+#include "Viewer.cuh"
 
 /*
 #define STB_IMAGE_IMPLEMENTATION
@@ -21,13 +20,17 @@ using namespace std;
 
 
 
-void free_resources(uint8_t* dest_dev, sf::Uint8* tmp) {
-    cudaFree(dest_dev);
-    delete[] tmp;
 
+
+
+
+int main(int argc, char** argv) {
+    Viewer main_view;
+    main_view.display();
 }
 
 
+/*
 int main(int argc,char ** argv) {
     
     cudaError_t cudaStatus = cudaSetDevice(0);
@@ -163,3 +166,4 @@ int main(int argc,char ** argv) {
 
 }
 
+*/

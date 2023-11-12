@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-template<typename T> __device__ __host__ struct TComplex
+ template<typename T>  struct TComplex
 {
     T real;
     T Imagine;
@@ -32,10 +32,10 @@ __host__ __device__ __inline__ T abs_complex(TComplex<T>& a) {
     return { sqrt(a.real * a.real + a.Imagine * a.Imagine) };
 }
 
-
-template<typename T> __device__ __host__ struct var2
+template<typename T>  struct var2
 {
     T x;
     T y;
 };
+
 
