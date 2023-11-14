@@ -135,9 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="boost_test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <CudaCompile Include="main.cu" />
     <CudaCompile Include="Viewer.cu" />
     <CudaCompile Include="mandelbrot.cu" />

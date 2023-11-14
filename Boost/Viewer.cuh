@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics.hpp>
 
+#include "stb_image_write.h"
 #include "mandelbrot.cuh" //include clause better
 #include <iostream>
 
@@ -20,6 +21,7 @@ class Viewer {
 		void Set_Defaults();
 		void Check_Events();
 		void Check_Keyboard();
+		void Check_Mouse();
 		void free_resources(uint8_t* dest_dev, sf::Uint8* tmp);
 		template<typename T>
 		void call_kernel();
@@ -32,6 +34,7 @@ class Viewer {
 		sf::Texture img_display;	//image to display
 		sf::Sprite sprite;			//sprite
 		sf::RenderWindow window;
+		sf::Vector2i last_mouse;
 
 
 		int res_x = -1;
@@ -46,10 +49,10 @@ class Viewer {
 
 
 		int mode = 0;
-		float center_x = 0;
-		float center_y = 0;
-		float scale = 2;
-
+		double center_x = 0;
+		double center_y = 0;//although doubles are slower, there were issues with moving camera when using floats (loss of precision)
+		double scale = 2;
+		bool precise = true;
 		int max_iters = 256;
 
 };

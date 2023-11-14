@@ -28,7 +28,12 @@ Viewer::~Viewer() {
 void Viewer::display() {
 	cudaError_t err;
 	while (window.isOpen()) {
-		call_kernel<float>();
+		if (precise) {
+			call_kernel<float>();
+		}
+		else {
+			call_kernel<double>();
+		}
 		Check_Events(); //adjust scaling
 		sync();
 		update_display();
@@ -44,9 +49,11 @@ void Viewer::Set_Defaults() {
 	img_display.create(res_x, res_y);
 	sprite = sf::Sprite(img_display);
 
-	window.create(sf::VideoMode(1025, 512), "Fractal Viewer");
-	//window.setFramerateLimit(60); // maybe remove?
+	window.create(sf::VideoMode(1024, 512), "Fractal Viewer");
+	window.setFramerateLimit(60); // maybe remove?
 	mode = 0;
+
+	last_mouse = { -1, -1 };
 }
 
 void Viewer::Check_Events() {
@@ -57,17 +64,25 @@ void Viewer::Check_Events() {
 			window.close();
 		}
 		if (e.type == sf::Event::MouseWheelMoved) {
-			double moved = e.mouseWheel.delta;	//scaling needed here!
+			float moved = e.mouseWheel.delta;	//scaling needed here!
 			if (moved > 0) {
 				scale = scale / sqrt(abs(moved) + .025);
 			}
 			else {
 				scale = scale * sqrt(abs(moved) + .025);
-				scale = std::min(scale, (float)4.0);
+				scale = std::min(scale, 4.0);
 			}
 		}
 	}
 	Check_Keyboard();
+	Check_Mouse();
+	if (abs(center_x) > 2) {
+		center_x = 2 * (center_x < 0 ? -1 : 1);
+	}
+	if (abs(center_y) > 1) {
+		center_y = 1 * (center_y < 0 ? -1 : 1);
+	}
+
 }
 
 void Viewer::Check_Keyboard() {
@@ -75,13 +90,25 @@ void Viewer::Check_Keyboard() {
 	int dir_x = (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 1 : 0) + (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? -1 : 0);
 	center_y += dir_y * (scale / 64.0);
 	center_x += dir_x * (scale / 64.0);
-	if (abs(center_x) > 2) {
-		center_x = 2 * (center_x < 0 ? -1 : 1);
+	
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
+		stbi_write_png("screenshot.png", res_x, res_y, num_channels, img_host, num_channels * res_x);
 	}
-	if (abs(center_y) > 1) {
-		center_y = 1 * (center_y < 0 ? -1 : 1);
+}
+
+void Viewer::Check_Mouse() {
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+		auto mouse_pos = sf::Mouse::getPosition(window);
+
+		if (last_mouse.x != -1) {
+			center_x -= ((mouse_pos.x - last_mouse.x) / 1024.0) * scale * 2; //flipped for x, multiplied by 2 for aspect ratio
+			center_y += ((mouse_pos.y - last_mouse.y) / 512.0) * scale;
+		}
+		last_mouse = mouse_pos;
 	}
-	std::cout << center_x << " " << center_y << "\n";
+	else {
+		last_mouse.x = -1; last_mouse.y = -1;
+	}
 }
 
 template<typename T>
@@ -91,7 +118,7 @@ void Viewer::call_kernel() {
 	switch (mode)
 	{
 	case 0: {
-		Determine_ends<float> << <entire_block, xyblock >> > (dest_dev, scale, center_x, center_y, max_iters);
+		Determine_ends<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, (T)center_x, (T)center_y, max_iters);
 		break;
 	}
 	case 1: {

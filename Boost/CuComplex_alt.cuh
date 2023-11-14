@@ -38,4 +38,8 @@ template<typename T>  struct var2
     T y;
 };
 
+//BROKEN!
+__host__ __device__ __inline__ float3 operator*(int &f, float3& arr) {
+    return make_float3(arr.x * f, arr.y * f, arr.z * f);
+}
 
