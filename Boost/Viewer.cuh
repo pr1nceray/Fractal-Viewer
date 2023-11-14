@@ -19,13 +19,18 @@ class Viewer {
 		~Viewer();
 
 	private:
+
+		void Init_Menu();
 		void Set_Defaults();
 		void Check_Events();
 		void Check_Keyboard();
 		void Check_Mouse();
+
 		void free_resources(uint8_t* dest_dev, sf::Uint8* tmp);
 		template<typename T>
 		void call_kernel();
+
+		void Cuda_Verify(const char * str, cudaError_t& e);
 
 		void sync();
 		void update_display();
@@ -51,10 +56,24 @@ class Viewer {
 		dim3 entire_block = dim3(64, 32); //default (needs to be changed)
 
 
-		int mode = 0;
+		int mode = 1;
+
 		var2<double> center;
 		double scale = 2;
-		bool precise = true;
+		bool precise = false;
 		int max_iters = 256;
 
+		class CudaException : public std::exception {
+			public : 
+				std::string msg;
+				int code;
+				CudaException(const std::string & message_in, int code_in) : msg(message_in), code(code_in) {
+					
+				}
+
+				virtual std::string what() {
+					return msg;
+				}
+		};
 };
+

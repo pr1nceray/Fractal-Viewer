@@ -11,12 +11,7 @@ Viewer::Viewer() {
 
 	err = cudaMalloc((void**)&dest_dev, sz_max * sizeof(sf::Uint8));
 
-	if (err != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc launch failed: %s\n", cudaGetErrorString(err));
-		free_resources(dest_dev, img_host);		//MAYBE CHANGE?
-		dest_dev = nullptr;
-		img_host = nullptr;
-	}
+	Cuda_Verify("cudaMalloc launch failed:", err);
 
 }
 
@@ -26,18 +21,28 @@ Viewer::~Viewer() {
 	}
 }
 void Viewer::display() {
-	cudaError_t err;
-	while (window.isOpen()) {
-		if (!precise) {
-			call_kernel<float>();
+	try {
+		while (window.isOpen()) {
+			if (!precise) {
+				call_kernel<float>();
+			}
+			else {
+				call_kernel<double>();
+			}
+			Check_Events(); //adjust scaling
+			sync();
+			update_display();
 		}
-		else {
-			call_kernel<double>();
-		}
-		Check_Events(); //adjust scaling
-		sync();
-		update_display();
 	}
+	catch (CudaException& e) {
+		std::cout << e.what() << " ; error code : " << e.code;
+		free_resources(dest_dev, img_host);
+	}
+
+}
+
+void Viewer::Init_Menu() {
+	//setup menu for the viewer
 }
 
 void Viewer::Set_Defaults() {
@@ -53,7 +58,7 @@ void Viewer::Set_Defaults() {
 
 	window.create(sf::VideoMode(1024, 512), "Fractal Viewer");
 	window.setFramerateLimit(60); // maybe remove?
-	mode = 0;
+	mode = 2;
 
 	last_mouse = { -1, -1 };
 
@@ -111,9 +116,8 @@ void Viewer::Check_Mouse() {
 
 		if (last_mouse.x != -1) {
 			//multiply by scale 
-			center.x -= ((mouse_pos.x - last_mouse.x) / (float)res.x) * scale * aspect_ratio * res.x/1024.0; 
-			center.y += ((mouse_pos.y - last_mouse.y) / (float)res.y) * scale * res.y/512.0;
-			//printf("pixel movement : %d, %d \n", (mouse_pos.x - last_mouse.x), (mouse_pos.y - last_mouse.y));
+			center.x -= ((mouse_pos.x - last_mouse.x) / (float)res.x) * scale * aspect_ratio; 
+			center.y += ((mouse_pos.y - last_mouse.y) / (float)res.y) * scale;
 		}
 		last_mouse = mouse_pos;
 	}
@@ -122,18 +126,29 @@ void Viewer::Check_Mouse() {
 	}
 }
 
+void Viewer::Cuda_Verify(const char * str, cudaError_t & err) {
+	if (err == cudaSuccess) return;
+	throw CudaException(str, std::stoi(cudaGetErrorString(err)));
+}
+
 template<typename T>
 void Viewer::call_kernel() {
-	//Determine_ends<float> << <entire_block, xyblock >> > (dest_dev, scale, center.x, center.y, max_iters);
 
 	switch (mode)
 	{
 	case 0: {
-		Determine_ends<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, max_iters);
+		Mandel_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, max_iters);
 		break;
 	}
 	case 1: {
-		//juliaSet
+		TComplex<T> c = make_complex((T)( - .618), (T)0);
+		Julia_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, c, res, max_iters,(T)1.00);
+		break;
+	}
+	case 2: {
+		TComplex<T> c = make_complex((T)( - .8), (T).156);
+		Julia_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, c, res, max_iters, (T)1.00);
+		break;
 	}
 	default:
 		break;
@@ -142,10 +157,8 @@ void Viewer::call_kernel() {
 
 void Viewer::sync() {
 	cudaError_t err = cudaDeviceSynchronize();
-	if (err != cudaSuccess) {
-		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", err);
-		free_resources(dest_dev, img_host);
-	}
+	Cuda_Verify("cudaDeviceSynchronize returned error", err);
+
 	cudaMemcpy(img_host, dest_dev, sz_total * sizeof(sf::Uint8), cudaMemcpyDeviceToHost);
 }
 
@@ -158,15 +171,16 @@ void Viewer::update_display() {
 }
 
 void Viewer::resize() {
+
 	res.x = window.getSize().x;
 	res.y = window.getSize().y;
+	
+	res.x = std::min(res.x, 3840); //clamp values
+	res.y = std::min(res.y, 2160);
 
 	//adjust so multiple of 16
 	res.x -= res.x % thread_size;
 	res.y -= res.y % thread_size;
-	
-	res.x = std::min(res.x, 3840); //clamp values
-	res.y = std::min(res.y, 2160);
 
 	center.x = 0;
 	center.y = 0;
