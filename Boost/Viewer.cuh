@@ -10,6 +10,7 @@
 #include <iostream>
 
 #define sz_max 3840 * 2160 * 4
+
 class Viewer {
 	public:
 		Viewer();
