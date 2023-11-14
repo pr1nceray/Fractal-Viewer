@@ -9,7 +9,7 @@
 #include "mandelbrot.cuh" //include clause better
 #include <iostream>
 
-
+#define sz_max 3840 * 2160 * 4
 class Viewer {
 	public:
 		Viewer();
@@ -37,20 +37,21 @@ class Viewer {
 		sf::Vector2i last_mouse;
 
 
-		int res_x = -1;
-		int res_y = -1;
+		var2<int> res;
+
+		float aspect_ratio = 2;
 		int num_channels;
 		int sz_total;
 
 
+		const int thread_size = 16;
 
-		dim3 xyblock = dim3(1024, 1); //default (needs to be changed)
-		dim3 entire_block = dim3(1, 512); //default (needs to be changed)
+		dim3 xyblock = dim3(thread_size,thread_size); //default (needs to be changed)
+		dim3 entire_block = dim3(64, 32); //default (needs to be changed)
 
 
 		int mode = 0;
-		double center_x = 0;
-		double center_y = 0;//although doubles are slower, there were issues with moving camera when using floats (loss of precision)
+		var2<double> center;
 		double scale = 2;
 		bool precise = true;
 		int max_iters = 256;

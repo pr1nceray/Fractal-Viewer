@@ -15,9 +15,9 @@ __inline__ __device__ float3 get_color(float v_init) {
 
 
 template <typename T> 
-__inline__ __device__ __host__ var2<T> get_bounds(int true_x, int true_y, T scale, T center_x, T center_y) {
-    T x_adjusted = ((((true_x / 1024.0) - .5) * scale) * 2) + center_x; //we multiply by 2 for aspect ratio
-    T y_adjusted = (-1.0 * (((true_y / 512.0) - .5) * scale)) + center_y;
+__inline__ __device__ __host__ var2<T> get_bounds(int true_x, int true_y, T scale, var2<int> res, var2<double> center) {
+    T x_adjusted = ((((true_x / (float)res.x) - .5) * scale) * (float)res.x/res.y) + center.x; //adjust for resizability
+    T y_adjusted = (-1.0 * (((true_y / (float)res.y) - .5) * scale)) + center.y;
     return var2<T>{ x_adjusted,y_adjusted };
 
 }
@@ -60,29 +60,24 @@ __device__ uint8_t calculateJulia(var2<T> center, T complex_val,T max_iters) {
 }
 
 template<typename T>
-__global__ void Determine_ends(uint8_t* dest, T scale, T center_x, T center_y, int max_iters)
+__global__ void Determine_ends(uint8_t* dest, T scale, var2<double> center, var2<int> res, int max_iters)
 {
 
-    int true_x = /*blockIdx.x * blockDim.x + */threadIdx.x;
-    int true_y = /*blockIdx.y * blockDim.y + */blockIdx.y;
+    float aspect_ratio = (float)res.x / res.y;
 
-    T cur_x = ((true_x / 1024.0) - .5) * scale;// *width; //-width/2 to width/2
-    T cur_y = -1.0 * (((true_y / 512.0) - .5) * scale); //.height/2 to -height/2
+    int true_x = blockIdx.x * blockDim.x + threadIdx.x;
+    int true_y = blockIdx.y * blockDim.y + threadIdx.y;
+   
+    var2<T> coords = get_bounds(true_x, true_y, scale, res, center);
 
-
-    cur_x *= 2; //2 for aspect ratio
-
-    cur_x += center_x;
-    cur_y += center_y;
-
-    //uint8_t mandel_value = calculateJulia<T>(get_bounds(true_x, true_y, scale, center_x, center_y), -1.3, max_iters);
-
-    uint8_t mandel_value = calculateMandel<T>(get_bounds(true_x,true_y,scale,center_x,center_y), max_iters);
-
+    uint8_t mandel_value = calculateMandel(coords, max_iters);
+    
     float3 ret_color = get_color(mandel_value / 255.0);
-    dest[(true_y * 1024 * 4) + (true_x * 4) + 0] = 255 * ret_color.x;
-    dest[(true_y * 1024 * 4) + (true_x * 4) + 1] = 255 * ret_color.y;
-    dest[(true_y * 1024 * 4) + (true_x * 4) + 2] = 255 * ret_color.z;
-    dest[(true_y * 1024 * 4) + (true_x * 4) + 3] = 255;
-}
+
+    dest[(true_y * res.x * 4) + (true_x * 4) + 0] =  255 * ret_color.x;
+    dest[(true_y * res.x * 4) + (true_x * 4) + 1] =  255 * ret_color.y;
+    dest[(true_y * res.x * 4) + (true_x * 4) + 2] =  255 * ret_color.z;
+    dest[(true_y * res.x * 4) + (true_x * 4) + 3] = 255;
+    
+    }
 
