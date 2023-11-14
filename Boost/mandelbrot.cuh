@@ -50,7 +50,7 @@ __device__ uint8_t calculateMandel(var2<T> center, int max_iters) {
 
 
 template<typename T>
-__device__ uint8_t calculateJulia(var2<T> center, TComplex<T> c, int max_iters, float a_val) {    
+__device__ uint8_t calculateJulia(var2<T> center, TComplex<T> c, int max_iters) {    
     TComplex<T> z_it = make_complex(center.x, center.y);
 
     int count = 1;
@@ -89,7 +89,7 @@ __global__ void Mandel_setup(uint8_t* dest, T scale, var2<double> center, var2<i
 
 
 template<typename T>
-__global__ void Julia_setup(uint8_t* dest, T scale, var2<double> center, TComplex<T> complex, var2<int> res, int max_iters, float a_val)
+__global__ void Julia_setup(uint8_t* dest, T scale, var2<double> center, TComplex<T> complex, var2<int> res, int max_iters)
 {
     T c_real = -0.618;
     T c_imagine = 0;
@@ -101,7 +101,7 @@ __global__ void Julia_setup(uint8_t* dest, T scale, var2<double> center, TComple
    
     var2<T> coords = get_bounds(index.x, index.y, scale, res, center);
 
-    uint8_t julia_value = calculateJulia(coords, complex, max_iters,a_val);
+    uint8_t julia_value = calculateJulia(coords, complex, max_iters);
     float3 ret_color = get_color(julia_value / 255.0);
 
     write_array(dest, index, ret_color, res.x);
