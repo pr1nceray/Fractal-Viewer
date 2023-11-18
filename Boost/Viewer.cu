@@ -163,7 +163,7 @@ void Viewer::call_kernel() {
 		break;
 	}
 	case 4: {
-		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 128);
+		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 256);
 		break;
 	}
 	default:

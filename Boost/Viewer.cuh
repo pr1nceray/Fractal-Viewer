@@ -62,6 +62,7 @@ class Viewer {
 		double scale = 2;
 		bool precise = true;
 		int max_iters = 256;
+		int newton_iters = 128;
 		float animate_value = 0;
 
 		class CudaException : public std::exception {
