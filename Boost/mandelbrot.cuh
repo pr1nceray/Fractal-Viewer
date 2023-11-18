@@ -35,14 +35,12 @@ template<typename T>
 __device__ uint8_t calculateMandel(var2<T> center, int max_iters) {
     TComplex<T> z_it = make_complex((T)0, (T)0);
     TComplex<T> c = make_complex(center.x, center.y);
-    int count = 1;
 
     for (int i = 0; i < max_iters; ++i) {
         if (abs_nonsqrt_complex(z_it) > 4.0) {
-            return count;
+            return i;
         }
-        z_it = add_complex(mult_complex(z_it, z_it), c);
-        count++;
+        z_it = add_complex(z_it * z_it, c);
     }
     return 255;
 }
@@ -53,16 +51,58 @@ template<typename T>
 __device__ uint8_t calculateJulia(var2<T> center, TComplex<T> c, int max_iters) {    
     TComplex<T> z_it = make_complex(center.x, center.y);
 
-    int count = 1;
-
     for (int i = 0; i < max_iters; ++i) {
         if ( abs_nonsqrt_complex(z_it) > 4.0) {
-            return count;
+            return i;
         }
         z_it = add_complex(mult_complex(z_it, z_it), c);
-        count++;
     }
     return 255;
+}
+
+template<typename T> 
+//for p(z) = z^3 -1
+//p'(z) = 3z^2 - 2
+__device__ uint8_t calculateNewtons(var2<T> center, int max_iters) {
+    TComplex<T> z_it = make_complex((T)center.x, center.y);
+    
+
+    for (int i = 0; i < max_iters; ++i) {
+        if (abs_nonsqrt_complex(z_it) > 4.0) {
+            return i;
+        }
+
+        TComplex<T> p_prime = z_it;
+        TComplex<T> p = pow_complex(z_it, 2);// = z_it^3
+
+        p.real -= 1;// = z_it^3 -1
+
+        p_prime = p_prime * 2;
+
+        TComplex<T> temp_t = { 1,1 }; //1 + i 
+        z_it = sub_complex(z_it,  temp_t * (p/p_prime));
+
+    }
+    return 255;
+}
+
+template<typename T>
+__global__ void Newton_setup(uint8_t* dest, T scale, var2<double> center, var2<int> res, int max_iters)
+{
+
+    const float aspect_ratio = (float)res.x / res.y;
+
+    //x,y coords in image ARRAY
+    var2<int> index = { blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y };
+
+    //x,y coords in image in terms of plotting
+    var2<T> coords = get_bounds(index.x, index.y, scale, res, center);
+
+    uint8_t newtons = calculateNewtons(coords, max_iters);//calculateMandel(coords, max_iters);
+
+    float3 ret_color = get_color(newtons / 255.0); // make_float3(mandel_value, mandel_value, mandel_value); // get_color(mandel_value / 255.0);
+
+    write_array(dest, index, ret_color, res.x);
 }
 
 
@@ -80,7 +120,7 @@ __global__ void Mandel_setup(uint8_t* dest, T scale, var2<double> center, var2<i
 
     uint8_t mandel_value = calculateMandel(coords, max_iters);
 
-    float3 ret_color = get_color(mandel_value / 255.0);
+    float3 ret_color = get_color(mandel_value / 255.0); // make_float3(mandel_value, mandel_value, mandel_value); // get_color(mandel_value / 255.0);
 
     write_array(dest, index, ret_color, res.x);
 }

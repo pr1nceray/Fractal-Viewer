@@ -58,12 +58,15 @@ void Viewer::Set_Defaults() {
 
 	window.create(sf::VideoMode(1024, 512), "Fractal Viewer");
 	window.setFramerateLimit(60); // maybe remove?
-	mode = 3;
+	mode = 4;
 
 	last_mouse = { -1, -1 };
 
 	center.x = 0;
 	center.y = 0;
+
+
+	
 }
 
 void Viewer::Check_Events() {
@@ -141,22 +144,26 @@ void Viewer::call_kernel() {
 		break;
 	}
 	case 1: {
-		TComplex<T> c = make_complex((T)( - .618), (T)0);
+		TComplex<T> c = make_complex((T)(-.618), (T)0);
 		Julia_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, c, res, max_iters);
 		break;
 	}
 	case 2: {
-		TComplex<T> c = make_complex((T)( - .8), (T).156);
+		TComplex<T> c = make_complex((T)(-.8), (T).156);
 		Julia_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, c, res, max_iters);
 		break;
 	}
 	case 3: {
-		animate_value += .005;
+		animate_value += .0025;
 		animate_value = animate_value > (6.283185) ? 0 : animate_value; // > 2pi
 		//e^ix = cos(x) + i sin(x) by eulers formula
 		TComplex<T> c = make_complex((T)(.7885 * cos(animate_value)), (T)(.7885 * sin(animate_value)));
 
 		Julia_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, c, res, max_iters);
+		break;
+	}
+	case 4: {
+		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 128);
 		break;
 	}
 	default:
