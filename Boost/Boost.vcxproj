@@ -158,6 +158,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CuComplex_alt.cuh" />
+    <ClInclude Include="CuComplex_operations.cuh" />
+    <ClInclude Include="Newtons.cuh" />
     <ClInclude Include="Viewer.cuh" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="Stb_image.h" />

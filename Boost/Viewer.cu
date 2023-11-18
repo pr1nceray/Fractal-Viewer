@@ -58,7 +58,7 @@ void Viewer::Set_Defaults() {
 
 	window.create(sf::VideoMode(1024, 512), "Fractal Viewer");
 	window.setFramerateLimit(60); // maybe remove?
-	mode = 4;
+	mode = 5;
 
 	last_mouse = { -1, -1 };
 
@@ -163,9 +163,14 @@ void Viewer::call_kernel() {
 		break;
 	}
 	case 4: {
-		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 256);
+		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 128,0);
 		break;
 	}
+	case 5: {
+		Newton_setup<T> << <entire_block, xyblock >> > (dest_dev, (T)scale, center, res, 256,1);
+		break;
+	}
+
 	default:
 		break;
 	}

@@ -67,6 +67,26 @@ template<typename T>
  }
 
 
+ template<typename T>
+ __device__ __inline__ TComplex<T> sin_complex(const TComplex<T>& a) {
+     return { sin(a.real) * cosh(a.Imagine), cos(a.real) * sinh(a.Imagine) };
+ }
+
+ template<typename T>
+ __device__ __inline__ TComplex<float> sin_complex_fast(const TComplex<T>& a) {
+     return {__sinf(a.real) * cosh(a.Imagine), __cosf(a.real) * sinh(a.Imagine) };
+ }
+
+ template<typename T>
+ __device__ __inline__ TComplex<T> cos_complex(const TComplex<T>& a) {
+     return { cos(a.real) * cosh(a.Imagine), -1 * sin(a.real) * sinh(a.Imagine) };
+ }
+
+ template<typename T>
+ __device__ __inline__ TComplex<float> cos_complex_fast(const TComplex<T>& a) {
+     return { __cosf(a.real) * cosh(a.Imagine), -1 * __sinf(a.real) * sinh(a.Imagine) };
+ }
+
 template<typename T>  struct var2
 {
     T x;
@@ -75,34 +95,4 @@ template<typename T>  struct var2
 
 __host__ __device__ __inline__ float3 operator*(const int &f, const float3& arr) {
     return make_float3(arr.x * f, arr.y * f, arr.z * f);
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> operator/(const TComplex<T>& b , const int a) {
-    return { b.real/x, b.Imagine /a };
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> operator*(const int a, const TComplex<T>& b) {
-    return { b.real * x, b.Imagine* a };
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> operator*(const TComplex<T>& b, const int a) {
-    return { b.real * a, b.Imagine * a };
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> operator/(const TComplex<T>& a, const TComplex<T>& b) {
-    return div_complex(a, b);
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> operator*(const TComplex<T>& a, const TComplex<T>& b) {
-    return mult_complex(a, b);
-}
-
-template<typename T>
-__host__ __device__  __inline__ TComplex<T> & operator*=(TComplex<T>& a, const int b) {
-    a.real *= b; a.Imagine *= b; return a;
 }

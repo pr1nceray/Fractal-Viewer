@@ -41,5 +41,11 @@
     <ClInclude Include="Viewer.cuh">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Newtons.cuh">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CuComplex_operations.cuh">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
