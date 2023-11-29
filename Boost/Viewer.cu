@@ -54,16 +54,18 @@ void Viewer::Set_Defaults() {
 	sz_total = 1024 * 512 * num_channels;
 
 	img_display.create(res.x, res.y);
+	img_display.setSmooth(false);
 	sprite = sf::Sprite(img_display);
 
 	window.create(sf::VideoMode(1024, 512), "Fractal Viewer");
 	window.setFramerateLimit(60); // maybe remove?
-	mode = 5;
+	mode = 2;
 
 	last_mouse = { -1, -1 };
 
 	center.x = 0;
 	center.y = 0;
+	
 
 
 	
@@ -77,13 +79,13 @@ void Viewer::Check_Events() {
 			window.close();
 		}
 		if (e.type == sf::Event::MouseWheelMoved) {
-			float moved = e.mouseWheel.delta;	//scaling needed here!
+			int moved = e.mouseWheel.delta;	//scaling needed here!
 			if (moved > 0) {
-				scale = scale / sqrt(abs(moved) + .025);
+				scale = scale / sqrt(moved + .025);
 			}
 			else {
 				scale = scale * sqrt(abs(moved) + .025);
-				scale = std::min(scale, 4.0);
+				scale = std::min(scale, 5.0);
 			}
 		}
 		if (e.type == sf::Event::Resized) {
@@ -181,6 +183,7 @@ void Viewer::sync() {
 	Cuda_Verify("cudaDeviceSynchronize returned error", err);
 
 	cudaMemcpy(img_host, dest_dev, sz_total * sizeof(sf::Uint8), cudaMemcpyDeviceToHost);
+	
 }
 
 void Viewer::update_display() {

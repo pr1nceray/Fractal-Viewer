@@ -18,9 +18,6 @@
     <CudaCompile Include="main.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="mandelbrot.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="Viewer.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>

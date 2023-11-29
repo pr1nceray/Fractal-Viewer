@@ -41,7 +41,7 @@ __device__ uint8_t calculateNewtons_fast(var2<T> center, int max_iters) {
 
     TComplex<float> p_prime;
     TComplex<float> p;
-    const TComplex<float> temp_t = { 1,1 };
+
     for (int i = 0; i < max_iters; ++i) {
         p_prime = pow_complex_fast(z_it, 2);
         p_prime *= 3;
@@ -103,8 +103,7 @@ __device__ uint8_t calculateNewtons2_fast(var2<T> center, int max_iters) {
     TComplex <float> p_cosd;
 
     TComplex <float> p_mult;
-
-    const TComplex<float> temp_t = { 1,0 };
+    TComplex <float> temp_t = { 1,1 };
     for (int i = 0; i < max_iters; ++i) {
 
         p_sind = sin_complex_fast(z_it);
@@ -139,18 +138,16 @@ __device__ uint8_t calculateNewtons2_fast(var2<T> center, int max_iters) {
 
 template<typename T>
 __device__ uint8_t calculateNewtons2(var2<T> center, int max_iters) {
-    const float epsilon = .000005;
+    const float epsilon = .0000005;
     TComplex<T> z_it = make_complex(center.x, center.y);
 
-    TComplex<T> p_prime;
-    TComplex<T> p;
 
-    TComplex <T> p_sind;
-    TComplex <T> p_cosd;
-
+    TComplex<T> p_prime, p;
+    TComplex <T> p_sind, p_cosd;
     TComplex <T> p_mult;
 
-    const TComplex<T> temp_t = { 1,0 };
+    TComplex <T> temp_t = { 1,1 };
+
     for (int i = 0; i < max_iters; ++i) {
 
         p_sind = sin_complex(z_it);

@@ -33,7 +33,6 @@ template<typename T>
 __global__ void Mandel_setup(uint8_t* dest, T scale, var2<double> center, var2<int> res, int max_iters)
 {
 
-    const float aspect_ratio = (float)res.x / res.y;
 
     //x,y coords in image ARRAY
     var2<int> index = { blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y };
@@ -54,8 +53,6 @@ __global__ void Julia_setup(uint8_t* dest, T scale, var2<double> center, TComple
     T c_real = -0.618;
     T c_imagine = 0;
     TComplex<T> c = make_complex(c_real, c_imagine);
-
-    const float aspect_ratio = (float)res.x / res.y;
 
     var2<int> index = { blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y };
    

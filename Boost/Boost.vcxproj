@@ -154,7 +154,6 @@
   <ItemGroup>
     <CudaCompile Include="main.cu" />
     <CudaCompile Include="Viewer.cu" />
-    <CudaCompile Include="mandelbrot.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CuComplex_alt.cuh" />
