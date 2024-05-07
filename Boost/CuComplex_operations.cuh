@@ -1,7 +1,12 @@
 #include "CuComplex_alt.cuh"
 
+/*
+* Operators for the cuComplex class.
+*/
 
-//operations for complex with an int
+/*
+* Operators between Complex object and int
+*/
 template<typename T>
 __host__ __device__  __inline__ TComplex<T> operator/(const TComplex<T>& b, const int a) {
     return { b.real / x, b.Imagine / a };
@@ -23,7 +28,9 @@ __host__ __device__  __inline__ TComplex<T>& operator*=(TComplex<T>& a, const in
     a.real *= b; a.Imagine *= b; return a;
 }
 
-//operations between 2 complex numbers
+/*
+* Operators between two Complex objects
+*/
 template<typename T>
 __host__ __device__  __inline__ TComplex<T> operator/(const TComplex<T>& a, const TComplex<T>& b) {
     return div_complex(a, b);
@@ -34,8 +41,11 @@ __host__ __device__  __inline__ TComplex<T> operator*(const TComplex<T>& a, cons
     return mult_complex(a, b);
 }
 
-
 template<typename T>
 __host__ __device__  __inline__ TComplex<T> operator+(const TComplex<T>& a, const TComplex<T>& b) {
     return { a.real + b.real, a.Imagine + b.Imagine };
+}
+template<typename T>
+__host__ __device__  __inline__ TComplex<T> operator-(const TComplex<T>& a, const TComplex<T>& b) {
+    return { a.real - b.real, a.Imagine - b.Imagine };
 }

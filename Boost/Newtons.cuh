@@ -1,8 +1,11 @@
-//for p(z) = z^5 * sin(z) -1
-//p'(z) = 5z^4 * sin(z) + cos(z) *z^5
 #include "CuComplex_operations.cuh"
 #include <iostream>
-
+    
+/*
+* Takes a float on the range 0-1 as argument  
+* Returns the color of the pixel at this point.
+* Each value is on the range 0-1.
+*/
 __inline__ __device__ float3 get_color(float v_init) {
     float3 a_init = make_float3(.5, .5, .5);
     float3 b_init = make_float3(.5, .5, .5);
@@ -15,14 +18,21 @@ __inline__ __device__ float3 get_color(float v_init) {
 }
 
 
+/*
+* Takes the x,y in pixels as well as other factors
+* Changes bounds from x,y to a scaled factor instead.
+*/
 template <typename T>
 __inline__ __device__ var2<T> get_bounds(int true_x, int true_y, T scale, var2<int> res, var2<double> center) {
-    T x_adjusted = ((((true_x / (float)res.x) - .5) * scale) * (float)res.x / res.y) + center.x; //adjust for resizability
+    T x_adjusted = ((((true_x / (float)res.x) - .5) * scale) * (float)res.x / res.y) + center.x; 
     T y_adjusted = (-1.0 * (((true_y / (float)res.y) - .5) * scale)) + center.y;
     return var2<T>{ x_adjusted, y_adjusted };
 
 }
 
+/*
+* Write the array into device memory
+*/
 __inline__ __device__ void write_array(uint8_t* dest, var2<int> idx, float3 rgb, int res_x) {
 
     dest[(idx.y * res_x * 4) + (idx.x * 4) + 0] = 255 * rgb.x;
@@ -32,8 +42,19 @@ __inline__ __device__ void write_array(uint8_t* dest, var2<int> idx, float3 rgb,
 }
 
 
-//for p(z) = z^3 -1
-//p'(z) = 3z^2
+/*
+* Newtons fractal.
+* Equations can be seen below
+* 
+* Unlike the mandelbrot equation, this attempts to see which of the 3 roots
+* we go to. We set the color to be the root reached. 
+* 
+* for p(z) = z^3 -1
+* p'(z) = 3z^2
+* 
+* Fast Version of Newtonss.
+* Uses template Specialization!
+*/
 template<typename T>
 __device__ uint8_t calculateNewtons_fast(var2<T> center, int max_iters) {
     const float epsilon = .005;
@@ -93,7 +114,7 @@ __device__ uint8_t calculateNewtons(var2<T> center, int max_iters) {
 //doesnt really work cuz of accumilated error when approximating causes it to shit the bed
 template<typename T>
 __device__ uint8_t calculateNewtons2_fast(var2<T> center, int max_iters) {
-    const float epsilon = .0005;
+    const float epsilon = .00005;
     TComplex<float> z_it = make_complex((float)center.x, (float)center.y);
 
     TComplex<float> p_prime;
@@ -103,11 +124,11 @@ __device__ uint8_t calculateNewtons2_fast(var2<T> center, int max_iters) {
     TComplex <float> p_cosd;
 
     TComplex <float> p_mult;
-    TComplex <float> temp_t = { 1,1 };
+    TComplex <float> temp_t = { 1,0 };
     for (int i = 0; i < max_iters; ++i) {
 
-        p_sind = sin_complex_fast(z_it);
-        p_cosd = cos_complex_fast(z_it);
+        p_sind = sin_complex(z_it);
+        p_cosd = cos_complex(z_it);
 
         p = pow_complex_fast(z_it, 5);
 
@@ -119,18 +140,11 @@ __device__ uint8_t calculateNewtons2_fast(var2<T> center, int max_iters) {
 
         z_it = sub_complex(z_it, (p_mult / p_prime));
 
-        if (abs(abs(z_it.real) - 1.031) < epsilon) { //pos or negative, so we take abs ahead of time.
+
+        if (abs(pow(z_it.real, 5) * sinf(z_it.real) - 1) < epsilon) {
             return i;
         }
-        if (abs(abs(z_it.real) - 3.138) < epsilon) {
-            return i;
-        }
-        if (abs(abs(z_it.real) - 6.283) < epsilon) {
-            return i;
-        }
-        if (abs(abs(z_it.real) - 9.424) < epsilon) {
-            return i;
-        }
+
     }
 
     return 0;
@@ -141,13 +155,12 @@ __device__ uint8_t calculateNewtons2(var2<T> center, int max_iters) {
     const float epsilon = .0000005;
     TComplex<T> z_it = make_complex(center.x, center.y);
 
-
     TComplex<T> p_prime, p;
-    TComplex <T> p_sind, p_cosd;
+    TComplex <T> p_sind,p_cosd;
+
     TComplex <T> p_mult;
 
-    TComplex <T> temp_t = { 1,1 };
-
+    TComplex<T> temp_t = { 1,0 };
     for (int i = 0; i < max_iters; ++i) {
 
         p_sind = sin_complex(z_it);
@@ -168,7 +181,7 @@ __device__ uint8_t calculateNewtons2(var2<T> center, int max_iters) {
         }
     }
 
-    return 0;
+    return max_iters;
 }
 
 template<typename T>
@@ -190,8 +203,8 @@ __global__ void Newton_setup(uint8_t* dest, T scale, var2<double> center, var2<i
             break;
         }
         case 1: {
-            newtons = calculateNewtons2(coords, max_iters);
-            ret_color = get_color(newtons / 128.0);
+            newtons = calculateNewtons2(coords,max_iters);
+            ret_color = get_color( (newtons / (float)max_iters));
             break;
         }
     }

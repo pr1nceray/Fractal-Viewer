@@ -52,8 +52,8 @@ class Viewer {
 
 		const int thread_size = 16;
 
-		dim3 xyblock = dim3(thread_size,thread_size); //default (needs to be changed)
-		dim3 entire_block = dim3(64, 32); //default (needs to be changed)
+		dim3 xyblock = dim3(thread_size,thread_size); //create 8 warps, 256 threads 
+		dim3 entire_block = dim3(64, 32); //ampere (my gpu has 64 warps per sm, 2048 threads. cleanly divisible by xyblock! each sm block takes 8 xyblocks! this takes 64 * 4 sm cores (lol sadge) 
 
 
 		int mode = 1;
