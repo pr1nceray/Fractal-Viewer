@@ -61,9 +61,15 @@ class Viewer {
 		var2<double> center;
 		double scale = 2;
 		bool precise = true;
+		
+		
 		int max_iters = 256;
 		int newton_iters = 128;
+		
 		float animate_value = 0;
+		float coolDownPress = 0.25f;
+		bool pausedAnimation = false;
+		bool invertAnimation = false;
 
 		class CudaException : public std::exception {
 			public : 

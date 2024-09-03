@@ -9,8 +9,8 @@
 __inline__ __device__ float3 get_color(float v_init) {
     float3 a_init = make_float3(.5, .5, .5);
     float3 b_init = make_float3(.5, .5, .5);
-    float3 c_init = make_float3(1, 1, 1);
-    float3 d_init = make_float3(0, .1, .2);
+    float3 c_init = make_float3(1, .7, .4);
+    float3 d_init = make_float3(0, .15, .2);
     float tmp_x = a_init.x + (b_init.x * cos(6.2831 * (c_init.x * v_init + d_init.x)));
     float tmp_y = a_init.y + (b_init.y * cos(6.2831 * (c_init.y * v_init + d_init.y)));
     float tmp_z = a_init.z + (b_init.z * cos(6.2831 * (c_init.z * v_init + d_init.z)));

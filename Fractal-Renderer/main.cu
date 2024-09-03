@@ -16,4 +16,3 @@ int main(int argc, char** argv) {
     Viewer main_view;
     main_view.display();
 }
-
